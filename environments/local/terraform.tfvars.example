@@ -1,0 +1,34 @@
+# Copy this file to terraform.tfvars and fill in real values.
+# terraform.tfvars is gitignored — never commit it.
+
+cluster_name = "rancher-lab"
+timezone     = "America/New_York"
+
+nodes = {
+  rke-master = {
+    ip   = "192.168.1.10"
+    role = "server"
+  }
+  rke-worker1 = {
+    ip   = "192.168.1.11"
+    role = "agent"
+  }
+}
+
+ssh_user              = "ubuntu"
+ssh_private_key_path  = "~/.ssh/id_rsa_rancher_lab"
+ssh_port              = 22
+
+domain_name      = "lab.example.com"
+rancher_hostname = "" # defaults to rancher.lab.example.com
+
+rke2_version         = "v1.30.4+rke2r1"
+rancher_version      = "2.9.1"
+cert_manager_version = "v1.15.3"
+longhorn_version     = "1.7.1"
+
+pod_cidr     = "10.42.0.0/16"
+service_cidr = "10.43.0.0/16"
+cluster_dns  = "10.43.0.10"
+
+grafana_admin_password = "" # empty -> Terraform generates one randomly

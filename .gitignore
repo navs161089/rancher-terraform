@@ -1,0 +1,36 @@
+# --- Terraform state & working directories -----------------------------
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# NOTE: .terraform.lock.hcl is intentionally NOT ignored — it is committed
+# so every clone resolves the exact same provider versions.
+
+# --- Variable files with real values -------------------------------------
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!*.tfvars.json.example
+
+# --- Secrets / keys pulled onto the workstation ---------------------------
+*.pem
+*.key
+id_rsa*
+kubeconfig
+kubeconfig.yaml
+*.kubeconfig
+
+# --- CLI local config -------------------------------------------------
+.terraformrc
+terraform.rc
+
+# --- OS / editor ------------------------------------------------------
+.DS_Store
+.vscode/
+.idea/
