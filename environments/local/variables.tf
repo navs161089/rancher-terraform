@@ -84,6 +84,16 @@ variable "ssh_port" {
 }
 
 # ---------------------------------------------------------------------------
+# OS preparation — consumed starting Phase 3 (Linux Preparation)
+# ---------------------------------------------------------------------------
+
+variable "disable_firewall" {
+  description = "Idempotently disable ufw on every node. RKE2 manages its own iptables/nftables rules for pod networking; a host firewall layered on top is the most common RKE2 support issue upstream. Set false to leave firewall state out of Terraform's scope entirely."
+  type        = bool
+  default     = true
+}
+
+# ---------------------------------------------------------------------------
 # Domain & TLS — consumed starting Phase 8/9 (cert-manager / TLS)
 # ---------------------------------------------------------------------------
 

@@ -36,4 +36,16 @@ locals {
   # guarantee to be stable across runs.
   first_server_name = sort(keys(local.server_nodes))[0]
   first_server_ip   = local.server_nodes[local.first_server_name].ip
+
+  # Re-shaped module.ssh output: strips the module's checked_id
+  # attribute back down to the {ip, role} shape modules/prerequisites
+  # expects, while still forcing a real dependency edge on the
+  # connectivity check having succeeded (module.ssh.checked_nodes only
+  # exists once every null_resource.connectivity_check has been created).
+  nodes_after_ssh_check = {
+    for name, n in module.ssh.checked_nodes : name => {
+      ip   = n.ip
+      role = n.role
+    }
+  }
 }
