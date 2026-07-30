@@ -156,10 +156,23 @@ variable "cluster_dns" {
   default     = "10.43.0.10"
 }
 
+variable "extra_tls_sans" {
+  description = "Additional Subject Alternative Names for the kube-apiserver certificate, beyond every server node's own IP. Populate once a load-balancer VIP or DNS name fronts the control plane (HA phase) — empty is correct for a single-server lab."
+  type        = list(string)
+  default     = []
+}
+
 # ---------------------------------------------------------------------------
-# Credentials — consumed starting Phase 11 (Rancher bootstrap) / Phase 13
-# (Grafana)
+# Credentials — consumed starting Phase 4 (RKE2 cluster token) / Phase 11
+# (Rancher bootstrap) / Phase 13 (Grafana)
 # ---------------------------------------------------------------------------
+
+variable "cluster_token_override" {
+  description = "Explicit RKE2 cluster token. Leave empty (default) to have Terraform generate one via the random provider — recommended, since a hand-picked token is one more secret for a human to leak."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
 
 variable "grafana_admin_password" {
   description = "Initial Grafana admin password. Leave empty to have Terraform generate a random one via the random provider (recommended — see modules/monitoring in Phase 13)."

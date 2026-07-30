@@ -9,12 +9,12 @@ installs, no manual Rancher clicks that Terraform doesn't know about.
 
 ## Status
 
-Building in phases. Current: **Phase 3 — Linux Preparation**.
+Building in phases. Current: **Phase 4 — RKE2 Server Installation**.
 
 - [x] Phase 1 — Repository Architecture
 - [x] Phase 2 — SSH Connectivity
 - [x] Phase 3 — Linux Preparation
-- [ ] Phase 4 — RKE2 Server Installation
+- [x] Phase 4 — RKE2 Server Installation
 - [ ] Phase 5 — Worker Installation
 - [ ] Phase 6 — Cluster Validation
 - [ ] Phase 7 — Ingress NGINX

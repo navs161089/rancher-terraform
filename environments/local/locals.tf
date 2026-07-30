@@ -48,4 +48,19 @@ locals {
       role = n.role
     }
   }
+
+  # Same re-shape, one stage later: prerequisites.prepared_nodes filtered
+  # down to servers only, forcing rke2-server to depend on OS prep having
+  # succeeded (not just SSH connectivity).
+  prepared_server_nodes = {
+    for name, n in module.prerequisites.prepared_nodes : name => {
+      ip   = n.ip
+      role = n.role
+    } if n.role == "server"
+  }
+
+  # random_password.cluster_token generates one automatically; an
+  # explicit cluster_token_override always wins, matching the same
+  # empty-string-means-generate pattern as grafana_admin_password.
+  cluster_token = var.cluster_token_override != "" ? var.cluster_token_override : random_password.cluster_token.result
 }
