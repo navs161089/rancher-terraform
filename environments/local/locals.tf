@@ -71,4 +71,10 @@ locals {
   # explicit cluster_token_override always wins, matching the same
   # empty-string-means-generate pattern as grafana_admin_password.
   cluster_token = var.cluster_token_override != "" ? var.cluster_token_override : random_password.cluster_token.result
+
+  # Single source of truth for where the fetched kubeconfig lives —
+  # referenced by both the kubernetes provider block (providers.tf) and
+  # module.kubernetes (main.tf). Keeping it here means the two can never
+  # drift apart into pointing at different files.
+  kubeconfig_path = "${path.root}/kubeconfig"
 }

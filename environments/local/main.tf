@@ -54,3 +54,19 @@ module "rke2_agent" {
   rke2_version         = var.rke2_version
   cluster_token        = local.cluster_token
 }
+
+module "kubernetes" {
+  source = "../../modules/kubernetes"
+
+  # Depends on the agent join too, not just the server — no direct data
+  # dependency links them, so this is ordering by intent: don't hand the
+  # user a kubeconfig until the whole cluster (not just the control
+  # plane) is actually up.
+  depends_on = [module.rke2_agent]
+
+  server_ip             = module.rke2_server.first_server_ip
+  ssh_user              = var.ssh_user
+  ssh_private_key_path  = var.ssh_private_key_path
+  ssh_port              = var.ssh_port
+  local_kubeconfig_path = local.kubeconfig_path
+}
