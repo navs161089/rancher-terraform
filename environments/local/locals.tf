@@ -59,6 +59,14 @@ locals {
     } if n.role == "server"
   }
 
+  # Same re-shape, filtered to agents instead of servers.
+  prepared_agent_nodes = {
+    for name, n in module.prerequisites.prepared_nodes : name => {
+      ip   = n.ip
+      role = n.role
+    } if n.role == "agent"
+  }
+
   # random_password.cluster_token generates one automatically; an
   # explicit cluster_token_override always wins, matching the same
   # empty-string-means-generate pattern as grafana_admin_password.

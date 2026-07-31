@@ -42,3 +42,15 @@ module "rke2_server" {
   cluster_dns          = var.cluster_dns
   extra_tls_sans       = var.extra_tls_sans
 }
+
+module "rke2_agent" {
+  source = "../../modules/rke2-agent"
+
+  nodes                = local.prepared_agent_nodes
+  first_server_ip      = module.rke2_server.first_server_ip
+  ssh_user             = var.ssh_user
+  ssh_private_key_path = var.ssh_private_key_path
+  ssh_port             = var.ssh_port
+  rke2_version         = var.rke2_version
+  cluster_token        = local.cluster_token
+}
