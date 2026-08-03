@@ -11,3 +11,9 @@ tls-san:
 %{ for san in tls_sans ~}
   - "${san}"
 %{ endfor ~}
+%{ if length(disabled_addons) > 0 }
+disable:
+%{ for addon in disabled_addons ~}
+  - "${addon}"
+%{ endfor ~}
+%{ endif ~}

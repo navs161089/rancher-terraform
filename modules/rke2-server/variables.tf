@@ -69,3 +69,9 @@ variable "extra_tls_sans" {
   type        = list(string)
   default     = []
 }
+
+variable "disabled_addons" {
+  description = "RKE2 packaged components to disable via config.yaml's `disable:` list, e.g. [\"rke2-ingress-nginx\"] to hand ingress over to a Terraform-managed helm_release instead of RKE2's bundled one (Phase 7). Empty by default — RKE2's defaults stay in effect."
+  type        = list(string)
+  default     = []
+}

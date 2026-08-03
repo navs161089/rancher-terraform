@@ -134,6 +134,11 @@ variable "longhorn_version" {
   type        = string
 }
 
+variable "ingress_nginx_version" {
+  description = "ingress-nginx Helm chart version installed in Phase 7, e.g. \"4.15.1\". Verify against `helm search repo ingress-nginx/ingress-nginx --versions` before changing."
+  type        = string
+}
+
 # ---------------------------------------------------------------------------
 # Kubernetes networking — consumed starting Phase 4 (RKE2 Server)
 # ---------------------------------------------------------------------------
@@ -160,6 +165,12 @@ variable "extra_tls_sans" {
   description = "Additional Subject Alternative Names for the kube-apiserver certificate, beyond every server node's own IP. Populate once a load-balancer VIP or DNS name fronts the control plane (HA phase) — empty is correct for a single-server lab."
   type        = list(string)
   default     = []
+}
+
+variable "rke2_disabled_addons" {
+  description = "RKE2 packaged components to disable. Defaults to disabling RKE2's own bundled ingress-nginx so Terraform's helm_release (Phase 7) is the sole owner of ingress — running both would conflict."
+  type        = list(string)
+  default     = ["rke2-ingress-nginx"]
 }
 
 # ---------------------------------------------------------------------------

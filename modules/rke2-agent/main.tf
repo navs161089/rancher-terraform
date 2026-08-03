@@ -39,7 +39,11 @@ resource "null_resource" "rke2_agent" {
       "sudo mv /tmp/rke2-agent-config.yaml /etc/rancher/rke2/config.yaml",
       "curl -sfL https://get.rke2.io -o /tmp/rke2-install.sh",
       "sudo INSTALL_RKE2_VERSION=${var.rke2_version} INSTALL_RKE2_TYPE=agent sh /tmp/rke2-install.sh",
-      "sudo systemctl enable --now rke2-agent.service",
+      # See modules/rke2-server/main.tf for why this is enable+restart,
+      # not enable --now: restart is what actually picks up a config
+      # change on a node that already has the service running.
+      "sudo systemctl enable rke2-agent.service",
+      "sudo systemctl restart rke2-agent.service",
 
       # Local join gate, not cluster validation (that's Phase 6): confirm
       # the kubelet on *this* node is actually healthy before we call

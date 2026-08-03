@@ -39,15 +39,31 @@ applies it plus the handful of steps with no provider equivalent
   because `net.bridge.bridge-nf-call-iptables` only exists under
   `/proc/sys` once `br_netfilter` is loaded — running sysctl first would
   silently fail to apply that key.
+- **`chrony`'s `makestep` limit is overridden to unlimited**
+  (`templates/chrony-makestep.conf`, dropped into `/etc/chrony/conf.d/`).
+  Discovered live, not anticipated: Ubuntu's default `makestep 1 3` only
+  permits an instant clock-jump correction for chronyd's first 3 updates
+  after starting — fine for a physical server, but this lab runs on VMs
+  that get paused/suspended (the host Mac sleeping), and a guest clock
+  frozen for hours during a pause blows straight past that 3-update
+  budget. The result: chrony reports the correct offset but can only
+  slew, never actually closing an hours-long gap — and every new pod's
+  ServiceAccount token then fails API server validation as
+  "Unauthorized" (the token looks valid to the node's wrong clock, but
+  the server, with correct time, has long since expired it). Confirmed
+  live: `rke-slave1` drifted 46 hours this way before being caught.
 
 ## Idempotency
 
-`triggers` hash the two template files plus `timezone`/`disable_firewall`/
-`ssh_user`, so `terraform plan` stays a no-op between applies unless
-desired state actually changed. Every inline command was written to be
-safe to re-run (the fstab sed only matches an *active*, non-commented
-swap line; `modprobe`/`apt-get install`/`ufw disable` are naturally
-idempotent).
+`triggers` hash the three template files plus `timezone`/
+`disable_firewall`/`ssh_user`, so `terraform plan` stays a no-op between
+applies unless desired state actually changed. Every inline command was
+written to be safe to re-run (the fstab sed only matches an *active*,
+non-commented swap line; `modprobe`/`apt-get install`/`ufw disable` are
+naturally idempotent; chrony is explicitly `restart`ed, not
+`enable --now`, because the latter no-ops on an already-running service
+and would silently never apply a config-only change like the makestep
+override).
 
 ## Inputs / Outputs
 

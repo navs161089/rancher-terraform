@@ -41,6 +41,7 @@ module "rke2_server" {
   service_cidr         = var.service_cidr
   cluster_dns          = var.cluster_dns
   extra_tls_sans       = var.extra_tls_sans
+  disabled_addons      = var.rke2_disabled_addons
 }
 
 module "rke2_agent" {
@@ -69,4 +70,17 @@ module "kubernetes" {
   ssh_private_key_path  = var.ssh_private_key_path
   ssh_port              = var.ssh_port
   local_kubeconfig_path = local.kubeconfig_path
+}
+
+module "ingress" {
+  source = "../../modules/ingress"
+
+  # module.rke2_server: so the disable: rke2-ingress-nginx config
+  # change (and the restart that actually tears the bundled controller
+  # down) lands before we try to install our own, avoiding a window
+  # with two ingress controllers fighting over :80/:443.
+  # module.kubernetes: so the helm provider has a kubeconfig to use.
+  depends_on = [module.rke2_server, module.kubernetes]
+
+  ingress_nginx_version = var.ingress_nginx_version
 }

@@ -22,10 +22,11 @@ ssh_port              = 22
 domain_name      = "lab.example.com"
 rancher_hostname = "" # defaults to rancher.lab.example.com
 
-rke2_version         = "v1.30.4+rke2r1"
-rancher_version      = "2.9.1"
-cert_manager_version = "v1.15.3"
-longhorn_version     = "1.7.1"
+rke2_version           = "v1.30.4+rke2r1"
+ingress_nginx_version  = "4.15.1"
+rancher_version        = "2.9.1"
+cert_manager_version   = "v1.15.3"
+longhorn_version       = "1.7.1"
 
 pod_cidr     = "10.42.0.0/16"
 service_cidr = "10.43.0.0/16"

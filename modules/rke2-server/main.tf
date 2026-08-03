@@ -26,21 +26,23 @@ locals {
   first_server_ip = var.nodes[var.first_server_name].ip
 
   rendered_config_first_server = templatefile("${path.module}/../../templates/rke2-server-config.yaml.tpl", {
-    token        = var.cluster_token
-    tls_sans     = local.tls_sans
-    pod_cidr     = var.pod_cidr
-    service_cidr = var.service_cidr
-    cluster_dns  = var.cluster_dns
-    server_url   = ""
+    token           = var.cluster_token
+    tls_sans        = local.tls_sans
+    pod_cidr        = var.pod_cidr
+    service_cidr    = var.service_cidr
+    cluster_dns     = var.cluster_dns
+    server_url      = ""
+    disabled_addons = var.disabled_addons
   })
 
   rendered_config_joiner = templatefile("${path.module}/../../templates/rke2-server-config.yaml.tpl", {
-    token        = var.cluster_token
-    tls_sans     = local.tls_sans
-    pod_cidr     = var.pod_cidr
-    service_cidr = var.service_cidr
-    cluster_dns  = var.cluster_dns
-    server_url   = "https://${local.first_server_ip}:9345"
+    token           = var.cluster_token
+    tls_sans        = local.tls_sans
+    pod_cidr        = var.pod_cidr
+    service_cidr    = var.service_cidr
+    cluster_dns     = var.cluster_dns
+    server_url      = "https://${local.first_server_ip}:9345"
+    disabled_addons = var.disabled_addons
   })
 }
 
@@ -72,7 +74,16 @@ resource "null_resource" "rke2_first_server" {
       "sudo mv /tmp/rke2-config.yaml /etc/rancher/rke2/config.yaml",
       "curl -sfL https://get.rke2.io -o /tmp/rke2-install.sh",
       "sudo INSTALL_RKE2_VERSION=${var.rke2_version} INSTALL_RKE2_TYPE=server sh /tmp/rke2-install.sh",
-      "sudo systemctl enable --now rke2-server.service",
+      # `enable --now` only *starts* a stopped service — it does not
+      # restart an already-running one, so a config-only change (e.g.
+      # adding to `disable:`) would silently never take effect on
+      # re-apply. `restart` is correct in both cases: starts it if
+      # stopped, reloads it with the new config if already running. This
+      # resource only re-runs when config_hash/rke2_version actually
+      # changed (see triggers above), so restarting here is never
+      # gratuitous.
+      "sudo systemctl enable rke2-server.service",
+      "sudo systemctl restart rke2-server.service",
 
       # Join-ordering gate, not cluster validation (that's Phase 6):
       # additional servers must not attempt to join until this node's
@@ -120,7 +131,16 @@ resource "null_resource" "rke2_additional_servers" {
       "sudo mv /tmp/rke2-config.yaml /etc/rancher/rke2/config.yaml",
       "curl -sfL https://get.rke2.io -o /tmp/rke2-install.sh",
       "sudo INSTALL_RKE2_VERSION=${var.rke2_version} INSTALL_RKE2_TYPE=server sh /tmp/rke2-install.sh",
-      "sudo systemctl enable --now rke2-server.service",
+      # `enable --now` only *starts* a stopped service — it does not
+      # restart an already-running one, so a config-only change (e.g.
+      # adding to `disable:`) would silently never take effect on
+      # re-apply. `restart` is correct in both cases: starts it if
+      # stopped, reloads it with the new config if already running. This
+      # resource only re-runs when config_hash/rke2_version actually
+      # changed (see triggers above), so restarting here is never
+      # gratuitous.
+      "sudo systemctl enable rke2-server.service",
+      "sudo systemctl restart rke2-server.service",
     ]
   }
 }

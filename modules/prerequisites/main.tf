@@ -20,6 +20,7 @@ resource "null_resource" "prerequisites" {
   triggers = {
     modules_conf_hash = filemd5("${path.module}/../../templates/k8s-modules.conf")
     sysctl_conf_hash  = filemd5("${path.module}/../../templates/k8s-sysctl.conf")
+    chrony_conf_hash  = filemd5("${path.module}/../../templates/chrony-makestep.conf")
     timezone          = var.timezone
     disable_firewall  = var.disable_firewall
     ssh_user          = var.ssh_user
@@ -46,6 +47,11 @@ resource "null_resource" "prerequisites" {
     destination = "/tmp/k8s-sysctl.conf"
   }
 
+  provisioner "file" {
+    source      = "${path.module}/../../templates/chrony-makestep.conf"
+    destination = "/tmp/chrony-makestep.conf"
+  }
+
   provisioner "remote-exec" {
     inline = [
       # --- Package updates: targeted install, not a blanket upgrade ---
@@ -58,9 +64,19 @@ resource "null_resource" "prerequisites" {
       # --- Chrony: systemd-timesyncd already owns NTP on a stock Ubuntu
       # image; running both time daemons at once is undefined behavior,
       # so timesyncd is explicitly stopped before chrony takes over.
+      #
+      # makestep override deployed here too, and unconditionally
+      # restarted (not enable --now, which no-ops on an already-running
+      # service — see modules/rke2-server for the same fix applied
+      # there) so a config-only re-apply actually takes effect, and so
+      # a VM-pause-induced clock jump gets step-corrected immediately
+      # on this restart rather than waiting on slew that may never
+      # catch up. Discovered live: see templates/chrony-makestep.conf.
       "sudo systemctl disable --now systemd-timesyncd || true",
       "sudo timedatectl set-timezone ${var.timezone}",
-      "sudo systemctl enable --now chrony",
+      "sudo mv /tmp/chrony-makestep.conf /etc/chrony/conf.d/90-makestep.conf",
+      "sudo systemctl enable chrony",
+      "sudo systemctl restart chrony",
 
       # --- Kernel modules + sysctl: modules must load *before* sysctl
       # --system runs, because net.bridge.bridge-nf-call-iptables only

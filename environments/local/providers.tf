@@ -1,9 +1,3 @@
-# Only providers actually consumed by resources declared *in this
-# environment today* are configured here. The helm provider is
-# deliberately still absent — it arrives in Phase 7, once there's an
-# ingress controller to install with it. Declaring a provider before
-# anything uses it is dead configuration.
-
 provider "random" {}
 
 provider "tls" {}
@@ -20,4 +14,14 @@ provider "null" {}
 # through this provider still needs its own depends_on.
 provider "kubernetes" {
   config_path = local.kubeconfig_path
+}
+
+# Same config_path reasoning as the kubernetes provider above. Note the
+# nested `kubernetes = { ... }` object syntax (not a `kubernetes {}`
+# block) — this is the v3.x helm provider's schema, confirmed against
+# its current docs, not carried over from memory of older v2.x syntax.
+provider "helm" {
+  kubernetes = {
+    config_path = local.kubeconfig_path
+  }
 }

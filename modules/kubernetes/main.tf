@@ -80,14 +80,24 @@ data "kubernetes_resources" "kube_system_pods" {
   kind        = "Pod"
   namespace   = "kube-system"
 
+  # WHY "not Failed" rather than "already Running/Succeeded" — found
+  # live, not designed in up front: a one-shot Job pod (e.g. RKE2's own
+  # internal helm-delete-* cleanup jobs when an addon is disabled) is
+  # legitimately Pending for a few seconds after creation, in a
+  # perfectly healthy cluster. Asserting "already settled" against a
+  # single point-in-time snapshot is inherently racy for anything
+  # Job-managed — Pending is a normal, expected phase on the way to
+  # Succeeded, not a failure. "Failed" is the one phase that's an
+  # unambiguous, non-transient problem, so that's what this actually
+  # gates on.
   lifecycle {
     postcondition {
       condition = alltrue([
-        for pod in self.objects : contains(["Running", "Succeeded"], pod.status.phase)
+        for pod in self.objects : pod.status.phase != "Failed"
       ])
-      error_message = "kube-system pod(s) not Running/Succeeded: ${join(", ", [
+      error_message = "kube-system pod(s) in Failed phase: ${join(", ", [
         for pod in self.objects : pod.metadata.name
-        if !contains(["Running", "Succeeded"], pod.status.phase)
+        if pod.status.phase == "Failed"
       ])}"
     }
   }

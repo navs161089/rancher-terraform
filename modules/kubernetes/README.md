@@ -53,6 +53,19 @@ inside the kubeconfig, and a silently stale local copy is a worse
 failure mode (a `kubectl` cert error days later, with no obvious cause)
 than one resource always showing as "changed."
 
+## The kube-system pod check gates on "not Failed", not "already Running"
+
+Found live, not designed in up front: the first version of this
+postcondition demanded every kube-system pod already be
+`Running`/`Succeeded`. That broke the very first time RKE2 spawned an
+internal one-shot Job pod (a `helm-delete-*` cleanup job, triggered by
+disabling an addon in Phase 7) — its pod was legitimately `Pending` for
+a few seconds, in an otherwise perfectly healthy cluster. Asserting
+"already settled" against a single point-in-time snapshot is inherently
+racy for anything Job-managed. `Failed` is the one phase that's an
+unambiguous, non-transient problem, so that's what the postcondition
+actually checks now.
+
 ## Where the kubeconfig goes, and why not `~/.kube/config`
 
 Written to a dedicated, gitignored path (`environments/local/kubeconfig`

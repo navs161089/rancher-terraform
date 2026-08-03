@@ -9,7 +9,7 @@ installs, no manual Rancher clicks that Terraform doesn't know about.
 
 ## Status
 
-Building in phases. Current: **Phase 6 — Cluster Validation**.
+Building in phases. Current: **Phase 7 — Ingress NGINX**.
 
 - [x] Phase 1 — Repository Architecture
 - [x] Phase 2 — SSH Connectivity
@@ -17,7 +17,7 @@ Building in phases. Current: **Phase 6 — Cluster Validation**.
 - [x] Phase 4 — RKE2 Server Installation
 - [x] Phase 5 — Worker Installation
 - [x] Phase 6 — Cluster Validation
-- [ ] Phase 7 — Ingress NGINX
+- [x] Phase 7 — Ingress NGINX
 - [ ] Phase 8 — cert-manager
 - [ ] Phase 9 — TLS (self-signed + Let's Encrypt)
 - [ ] Phase 10 — Install Rancher
